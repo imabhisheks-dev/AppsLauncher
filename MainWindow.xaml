@@ -1,0 +1,405 @@
+<Window x:Class="AppsLauncher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Apps Launcher"
+        Icon="/AppsLauncher;component/launcher.ico"
+        Height="480" Width="900"
+        MinWidth="600" MinHeight="300"
+        Background="#F3F3F3"
+        FontFamily="Consolas"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+
+        <!-- Toolbar button base style -->
+        <Style x:Key="ToolbarButton" TargetType="Button">
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Margin" Value="3,0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="5"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.7"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Kill button (dark red) -->
+        <Style x:Key="KillButton" TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
+            <Setter Property="Background" Value="#8B0000"/>
+            <Setter Property="Padding" Value="7,3"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- Launch button (green) -->
+        <Style x:Key="LaunchButton" TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
+            <Setter Property="Background" Value="#107C10"/>
+            <Setter Property="Padding" Value="7,3"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- Remove button (red) -->
+        <Style x:Key="RemoveButton" TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
+            <Setter Property="Background" Value="#C42B1C"/>
+        </Style>
+
+        <!-- Save button (indigo) -->
+        <Style x:Key="SaveButton" TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
+            <Setter Property="Background" Value="#5C6BC0"/>
+        </Style>
+
+        <!-- Add button (blue) -->
+        <Style x:Key="AddButton" TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
+            <Setter Property="Background" Value="#0078D4"/>
+        </Style>
+
+        <!-- Edit-lock toggle button (amber) -->
+        <Style x:Key="EditToggleButton" TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
+            <Setter Property="Background" Value="#B8860B"/>
+        </Style>
+
+        <!-- Clipper button (teal) -->
+        <Style x:Key="ClipperButton" TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
+            <Setter Property="Background" Value="#00796B"/>
+        </Style>
+
+        <!-- TextBox inside grid cells -->
+        <Style x:Key="CellTextBox" TargetType="TextBox">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="4,0"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
+        <!-- TextBlock inside grid cells (display mode) -->
+        <Style x:Key="CellTextBlock" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="5,0"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        </Style>
+
+        <!-- DataGrid column header style -->
+        <Style x:Key="ColumnHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#E8EAED"/>
+            <Setter Property="Foreground" Value="#3C4043"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="6,0"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="BorderThickness" Value="0,0,1,2"/>
+            <Setter Property="BorderBrush" Value="#DADCE0"/>
+        </Style>
+
+        <!-- DataGrid cell style -->
+        <Style x:Key="CellStyle" TargetType="DataGridCell">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#E8F0FE"/>
+                    <Setter Property="Foreground" Value="#1A1A1A"/>
+                </Trigger>
+                <Trigger Property="IsEditing" Value="True">
+                    <Setter Property="Background" Value="#FFF8E1"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header bar -->
+        <Border Grid.Row="0" Background="#0078D4" Padding="12,7">
+            <DockPanel>
+                <TextBlock Text="&#x1F680;" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBlock Text="Apps Launcher"
+                           Foreground="White"
+                           FontFamily="Consolas"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text="Configure and launch your apps, scripts, and tools"
+                           Foreground="#BBD9F5"
+                           FontFamily="Consolas"
+                           FontSize="10"
+                           VerticalAlignment="Center"
+                           Margin="12,0,0,0"
+                           DockPanel.Dock="Right"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="1"
+                Background="#F8F9FA"
+                BorderThickness="0,0,0,1"
+                BorderBrush="#DADCE0"
+                Padding="8,5">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <Button Content="+ Add Row"
+                            Style="{StaticResource AddButton}"
+                            Click="AddRow_Click"
+                            ToolTip="Add a new launcher row"/>
+                    <Button Content="&#x2212; Remove Row"
+                            Style="{StaticResource RemoveButton}"
+                            Click="RemoveRow_Click"
+                            ToolTip="Remove the selected row"/>
+                    <Rectangle Width="1" Fill="#DADCE0" Margin="6,3"/>
+                    <Button Content="&#x1F4BE; Save"
+                            Style="{StaticResource SaveButton}"
+                            Click="Save_Click"
+                            ToolTip="Save configuration to disk (also saved automatically on close)"/>
+                    <Rectangle Width="1" Fill="#DADCE0" Margin="6,3"/>                    <Button x:Name="EditToggleBtn"
+                            Content="🔒 Editing: OFF"
+                            Style="{StaticResource EditToggleButton}"
+                            Click="EditToggle_Click"
+                            ToolTip="Toggle editing of Program/Script paths"/>
+                    <Rectangle Width="1" Fill="#DADCE0" Margin="6,3"/>                    <Button Content="📋 Clipper"
+                            Style="{StaticResource ClipperButton}"
+                            Click="OpenClipper_Click"
+                            ToolTip="Open the Clipper panel"/>
+                    <Rectangle Width="1" Fill="#DADCE0" Margin="6,3"/>
+                    <TextBlock VerticalAlignment="Center" Margin="4,0"
+                               FontFamily="Consolas" FontSize="11">
+                        <Hyperlink Click="Help_Click"
+                                   Foreground="#0078D4"
+                                   TextDecorations="Underline">? Help</Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+                <TextBlock Text="Double-click any cell to edit."
+                           Foreground="#888"
+                           FontFamily="Consolas"
+                           FontSize="10"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           DockPanel.Dock="Right"/>
+            </DockPanel>
+        </Border>
+
+        <!-- DataGrid -->
+        <DataGrid Grid.Row="2"
+                  x:Name="LaunchGrid"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  CanUserReorderColumns="False"
+                  CanUserResizeRows="False"
+                  HeadersVisibility="Column"
+                  GridLinesVisibility="Horizontal"
+                  HorizontalGridLinesBrush="#EEEEEE"
+                  RowHeight="28"
+                  SelectionUnit="FullRow"
+                  SelectionMode="Single"
+                  Background="White"
+                  AlternatingRowBackground="#FAFAFA"
+                  BorderThickness="0"
+                  ColumnHeaderStyle="{StaticResource ColumnHeaderStyle}"
+                  CellStyle="{StaticResource CellStyle}"
+                  IsReadOnly="False"
+                  PreviewMouseLeftButtonDown="DataGrid_PreviewMouseLeftButtonDown">
+
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                    <Setter Property="BorderBrush" Value="#F0F0F0"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="#E8F0FE"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#F1F3F4"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
+
+            <DataGrid.Columns>
+
+                <!-- Column 1: Application (was Label) -->
+                <DataGridTemplateColumn Header="Application" Width="160" SortMemberPath="Label" x:Name="ColApplication">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Label}"
+                                       FontWeight="Bold"
+                                       Foreground="#1A1A2E"
+                                       VerticalAlignment="Center"
+                                       Padding="5,0"
+                                       FontFamily="Consolas"
+                                       FontSize="11"
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTip="Double-click to rename"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource CellTextBox}"
+                                     x:Name="LabelEditBox"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Column 2: Program/Script (was File / Script) -->
+                <DataGridTemplateColumn Header="Program/Script" Width="*" SortMemberPath="FilePath" x:Name="ColProgramScript">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding FilePath}"
+                                       Style="{StaticResource CellTextBlock}"
+                                       ToolTip="{Binding FilePath}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource CellTextBox}"
+                                     ToolTip="{Binding FilePath}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Column 4: Launch -->
+                <DataGridTemplateColumn Header="" Width="95" x:Name="ColLaunch">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="&#x25B6; Launch"
+                                    Style="{StaticResource LaunchButton}"
+                                    Click="Launch_Click"
+                                    Tag="{Binding}"
+                                    Margin="4,2"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Column 5: Status badge -->
+                <DataGridTemplateColumn Header="Status" Width="110" IsReadOnly="True" SortMemberPath="Status" x:Name="ColStatus">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border x:Name="Badge"
+                                    CornerRadius="8"
+                                    Padding="7,2"
+                                    Margin="4,4"
+                                    HorizontalAlignment="Left"
+                                    Background="#E0E0E0">
+                                <TextBlock x:Name="BadgeText"
+                                           Text="{Binding Status}"
+                                           FontFamily="Consolas"
+                                           FontSize="10"
+                                           FontWeight="SemiBold"
+                                           Foreground="#555555"/>
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="#E0E0E0"/>
+                                    </Style>
+                                </Border.Style>
+                            </Border>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding Status}" Value="Running">
+                                    <Setter TargetName="Badge" Property="Background" Value="#E6F4EA"/>
+                                    <Setter TargetName="BadgeText" Property="Foreground" Value="#137333"/>
+                                    <Setter TargetName="BadgeText" Property="Text" Value="● Running"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="Terminated">
+                                    <Setter TargetName="Badge" Property="Background" Value="#FCE8E6"/>
+                                    <Setter TargetName="BadgeText" Property="Foreground" Value="#8B0000"/>
+                                    <Setter TargetName="BadgeText" Property="Text" Value="■ Terminated"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="Error">
+                                    <Setter TargetName="Badge" Property="Background" Value="#FFF3CD"/>
+                                    <Setter TargetName="BadgeText" Property="Foreground" Value="#856404"/>
+                                    <Setter TargetName="BadgeText" Property="Text" Value="⚠ Error"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="Idle">
+                                    <Setter TargetName="Badge" Property="Background" Value="#F1F3F4"/>
+                                    <Setter TargetName="BadgeText" Property="Foreground" Value="#80868B"/>
+                                    <Setter TargetName="BadgeText" Property="Text" Value="— Idle"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="Stopped">
+                                    <Setter TargetName="Badge" Property="Background" Value="#FFF3E0"/>
+                                    <Setter TargetName="BadgeText" Property="Foreground" Value="#E65100"/>
+                                    <Setter TargetName="BadgeText" Property="Text" Value="◼ Stopped"/>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Column 6: TaskKill (read-only from UI, edit via config file) -->
+                <DataGridTemplateColumn Header="TaskKill Command" Width="230" SortMemberPath="TaskKillCommand" IsReadOnly="True" x:Name="ColTaskKill">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0"
+                                           Text="{Binding TaskKillCommand}"
+                                           Style="{StaticResource CellTextBlock}"
+                                           Foreground="#555"
+                                           ToolTip="Edit via launcher-config.json"/>
+                                <Button Grid.Column="1"
+                                        Content="&#x2B1B; Kill"
+                                        Style="{StaticResource KillButton}"
+                                        Click="Kill_Click"
+                                        Tag="{Binding}"
+                                        Margin="3,2"/>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Status bar -->
+        <Border Grid.Row="3"
+                Background="#F1F3F4"
+                BorderThickness="0,1,0,0"
+                BorderBrush="#DADCE0"
+                Padding="10,3">
+            <DockPanel>
+                <TextBlock x:Name="StatusIcon" Text="&#x2713;" Foreground="#107C10"
+                           FontFamily="Consolas" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                <TextBlock x:Name="StatusText" Text="Ready"
+                           FontFamily="Consolas" Foreground="#5F6368" FontSize="10" VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+
+    </Grid>
+</Window>
